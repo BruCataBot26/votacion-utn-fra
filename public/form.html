@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>UTN FRA — Jornada 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Montserrat', Arial, sans-serif; background: #f0f4f8; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+  .card { background: #fff; border-radius: 20px; padding: 28px 24px; width: 100%; max-width: 390px; box-shadow: 0 8px 32px rgba(31,78,121,0.12); }
+  .logo-area { text-align: center; margin-bottom: 20px; }
+  .utn-logo-svg { width: 68px; height: 68px; margin-bottom: 10px; }
+  .logo-tagline { font-size: 13px; font-weight: 600; color: #1F4E79; line-height: 1.5; }
+  .logo-tagline em { font-style: normal; color: #2E75B6; }
+
+  .step-bar { display: flex; align-items: flex-start; margin-bottom: 24px; }
+  .step-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+  .step-circle { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; transition: all 0.3s; flex-shrink: 0; }
+  .step-circle.active  { background: #1F4E79; color: #fff; }
+  .step-circle.done    { background: #27AE60; color: #fff; }
+  .step-circle.pending { background: #e8edf2; color: #bbb; }
+  .step-label { font-size: 10px; color: #bbb; margin-top: 5px; font-weight: 600; text-align: center; letter-spacing: 0.03em; }
+  .step-label.active { color: #1F4E79; }
+  .step-connector { flex: 1; height: 2px; background: #e8edf2; margin-top: 17px; transition: background 0.3s; }
+  .step-connector.done { background: #27AE60; }
+
+  .question { font-size: 19px; font-weight: 800; color: #1F4E79; line-height: 1.35; margin-bottom: 6px; }
+  .question span { color: #2E75B6; }
+  .question-hint { font-size: 12px; color: #aaa; margin-bottom: 16px; font-weight: 500; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .chip { padding: 8px 14px; border: 1.5px solid #d0dce8; border-radius: 20px; font-size: 13px; color: #555; cursor: pointer; font-family: 'Montserrat', Arial, sans-serif; font-weight: 600; background: #fff; transition: all 0.15s; }
+  .chip:hover, .chip.selected { border-color: #1F4E79; color: #1F4E79; background: #e8f0f8; }
+  .answer-input { width: 100%; border: 1.5px solid #d0dce8; border-radius: 12px; padding: 13px 16px; font-size: 15px; font-family: 'Montserrat', Arial, sans-serif; font-weight: 600; color: #1F4E79; outline: none; transition: border 0.15s; background: #fafbfc; }
+  .answer-input:focus { border-color: #1F4E79; background: #fff; }
+  .answer-input::placeholder { color: #ccc; font-weight: 400; }
+  .btn { width: 100%; padding: 15px; background: #1F4E79; color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 800; font-family: 'Montserrat', Arial, sans-serif; cursor: pointer; margin-top: 16px; transition: all 0.15s; letter-spacing: 0.02em; }
+  .btn:hover:not(:disabled) { background: #2E75B6; transform: translateY(-1px); }
+  .btn:disabled { background: #c8d4de; cursor: default; }
+  .thanks { text-align: center; padding: 12px 0; }
+  .thanks-icon { font-size: 56px; margin-bottom: 14px; }
+  .thanks h2 { font-size: 22px; font-weight: 800; color: #1F4E79; margin-bottom: 10px; }
+  .thanks p { font-size: 14px; color: #888; line-height: 1.7; font-weight: 500; }
+  .thanks .hi { color: #27AE60; font-weight: 700; }
+  .err { font-size: 12px; color: #e74c3c; margin-top: 6px; font-weight: 600; display: none; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo-area">
+    <svg class="utn-logo-svg" viewBox="0 0 68 68" fill="none">
+      <rect width="68" height="68" rx="12" fill="#1F4E79"/>
+      <text x="34" y="25" text-anchor="middle" font-family="Montserrat,Arial" font-weight="800" font-size="19" fill="#fff">UTN</text>
+      <rect x="10" y="29" width="48" height="2" fill="#2E75B6"/>
+      <text x="34" y="42" text-anchor="middle" font-family="Montserrat,Arial" font-weight="600" font-size="8" fill="#a8c4e0">FACULTAD REGIONAL</text>
+      <text x="34" y="56" text-anchor="middle" font-family="Montserrat,Arial" font-weight="800" font-size="10" fill="#fff">AVELLANEDA</text>
+    </svg>
+    <div class="logo-tagline">Estás en la UTN.<br><em>Acá formamos a quienes cambian su entorno.</em></div>
+  </div>
+
+  <div class="step-bar">
+    <div class="step-item">
+      <div class="step-circle active" id="dot1">1</div>
+      <div class="step-label active" id="lbl1">Tu barrio</div>
+    </div>
+    <div class="step-connector" id="conn1"></div>
+    <div class="step-item">
+      <div class="step-circle pending" id="dot2">2</div>
+      <div class="step-label" id="lbl2">Tu futuro</div>
+    </div>
+  </div>
+
+  <div id="step1">
+    <div class="question">Como futuro profesional, ¿qué le <span>sumarías</span> a tu barrio?</div>
+    <div class="question-hint">Elegí una opción o escribí la tuya</div>
+    <div class="chips" id="chips1">
+      <span class="chip" onclick="pick('input1','chips1',this)">Seguridad</span>
+      <span class="chip" onclick="pick('input1','chips1',this)">Trabajo</span>
+      <span class="chip" onclick="pick('input1','chips1',this)">Salud</span>
+      <span class="chip" onclick="pick('input1','chips1',this)">Educación</span>
+      <span class="chip" onclick="pick('input1','chips1',this)">Tecnología</span>
+      <span class="chip" onclick="pick('input1','chips1',this)">Espacios verdes</span>
+      <span class="chip" onclick="pick('input1','chips1',this)">Cultura</span>
+      <span class="chip" onclick="pick('input1','chips1',this)">Inclusión</span>
+    </div>
+    <input type="text" class="answer-input" id="input1" placeholder="O escribí tu respuesta..." maxlength="40" oninput="chk('btn1','input1')">
+    <div class="err" id="err1">Por favor ingresá una respuesta</div>
+    <button class="btn" id="btn1" onclick="goStep2()" disabled>Siguiente →</button>
+  </div>
+
+  <div id="step2" style="display:none;">
+    <div class="question">¿En qué te gustaría <span>capacitarte</span> para transformar tu barrio?</div>
+    <div class="question-hint">Elegí una opción o escribí la tuya</div>
+    <div class="chips" id="chips2">
+      <span class="chip" onclick="pick('input2','chips2',this)">Ingeniería</span>
+      <span class="chip" onclick="pick('input2','chips2',this)">Programación</span>
+      <span class="chip" onclick="pick('input2','chips2',this)">Electrónica</span>
+      <span class="chip" onclick="pick('input2','chips2',this)">Idiomas</span>
+      <span class="chip" onclick="pick('input2','chips2',this)">Oficios</span>
+      <span class="chip" onclick="pick('input2','chips2',this)">Administración</span>
+      <span class="chip" onclick="pick('input2','chips2',this)">Diseño</span>
+      <span class="chip" onclick="pick('input2','chips2',this)">Salud</span>
+    </div>
+    <input type="text" class="answer-input" id="input2" placeholder="O escribí tu respuesta..." maxlength="40" oninput="chk('btn2','input2')">
+    <div class="err" id="err2">Por favor ingresá una respuesta</div>
+    <button class="btn" id="btn2" onclick="submit()" disabled>Enviar ✓</button>
+  </div>
+
+  <div id="thanks" style="display:none;">
+    <div class="thanks">
+      <div class="thanks-icon">🎓</div>
+      <h2>¡Gracias!</h2>
+      <p>Tu respuesta ya aparece<br><span class="hi">en la pantalla principal.</span></p>
+      <p style="margin-top:14px;">Seguí recorriendo la facultad<br>y conocé todo lo que tenemos para vos.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  let a1 = '';
+  function pick(inputId, chipsId, el) {
+    document.querySelectorAll(`#${chipsId} .chip`).forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById(inputId).value = el.textContent;
+    chk(inputId === 'input1' ? 'btn1' : 'btn2', inputId);
+  }
+  function chk(btnId, inputId) {
+    document.getElementById(btnId).disabled = document.getElementById(inputId).value.trim().length < 2;
+  }
+  function goStep2() {
+    a1 = document.getElementById('input1').value.trim();
+    if (a1.length < 2) return;
+    document.getElementById('step1').style.display = 'none';
+    document.getElementById('step2').style.display = 'block';
+    document.getElementById('dot1').className = 'step-circle done';
+    document.getElementById('dot1').textContent = '✓';
+    document.getElementById('lbl1').className = 'step-label';
+    document.getElementById('conn1').className = 'step-connector done';
+    document.getElementById('dot2').className = 'step-circle active';
+    document.getElementById('lbl2').className = 'step-label active';
+  }
+  async function submit() {
+    const a2 = document.getElementById('input2').value.trim();
+    if (a2.length < 2) return;
+    const btn = document.getElementById('btn2');
+    btn.disabled = true; btn.textContent = 'Enviando...';
+    try {
+      const r = await fetch('/vote', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ a1, a2 }) });
+      if (!r.ok) throw new Error();
+      document.getElementById('step2').style.display = 'none';
+      document.getElementById('thanks').style.display = 'block';
+    } catch {
+      btn.disabled = false; btn.textContent = 'Enviar ✓';
+      document.getElementById('err2').style.display = 'block';
+      document.getElementById('err2').textContent = 'Error al enviar. Intentá de nuevo.';
+    }
+  }
+</script>
+</body>
+</html>

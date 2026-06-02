@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UTN FRA — Pantalla TV</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #071525; color: #fff; font-family: 'Montserrat', Arial, sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+  header { background: #1F4E79; padding: 14px 40px; display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid #2E75B6; flex-shrink: 0; }
+  .header-left { display: flex; align-items: center; gap: 18px; }
+  .utn-logo { width: 60px; height: 60px; flex-shrink: 0; }
+  .header-text .sup { font-size: 12px; font-weight: 600; color: #a8c4e0; letter-spacing: 0.12em; text-transform: uppercase; }
+  .header-text .main { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: 0.02em; }
+  .live-badge { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.1); padding: 8px 20px; border-radius: 30px; flex-shrink: 0; }
+  .live-dot { width: 10px; height: 10px; border-radius: 50%; background: #e74c3c; animation: pulse 1.2s infinite; flex-shrink: 0; }
+  .live-text { font-size: 14px; font-weight: 600; color: #a8c4e0; letter-spacing: 0.06em; }
+  .live-count { font-size: 16px; font-weight: 800; color: #fff; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.15} }
+
+  .clouds-area { flex: 1; display: grid; grid-template-columns: 1fr 1fr; min-height: 0; }
+  .panel { display: flex; flex-direction: column; padding: 24px 36px 16px; min-height: 0; }
+  .panel:first-child { border-right: 1px solid rgba(255,255,255,0.07); }
+  .panel-q { font-size: 18px; font-weight: 700; color: #a8c4e0; text-align: center; margin-bottom: 6px; line-height: 1.4; }
+  .panel-q em { font-style: normal; font-weight: 800; }
+  .panel-q.blue em { color: #64b5f6; }
+  .panel-q.green em { color: #81c784; }
+  .divider { width: 56px; height: 3px; border-radius: 2px; margin: 8px auto 16px; }
+  .divider.blue { background: #2E75B6; }
+  .divider.green { background: #27AE60; }
+  .cloud { flex: 1; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; align-content: center; gap: 12px 18px; padding: 8px; min-height: 0; overflow: hidden; }
+  .word { display: inline-block; font-weight: 800; font-family: 'Montserrat', Arial, sans-serif; animation: popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275); transition: font-size 0.4s ease, color 0.4s ease; line-height: 1.1; }
+  @keyframes popIn { from { opacity:0; transform:scale(0.5); } to { opacity:1; transform:scale(1); } }
+  .panel-count { text-align: center; font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.2); padding: 8px 0 4px; letter-spacing: 0.06em; flex-shrink: 0; }
+
+  footer { background: #0a1e35; padding: 10px 40px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.07); flex-shrink: 0; }
+  .footer-cta { font-size: 14px; font-weight: 600; color: #a8c4e0; }
+  .footer-cta strong { color: #fff; }
+  .footer-url { font-size: 13px; font-weight: 700; color: #64b5f6; font-family: monospace; letter-spacing: 0.05em; }
+  .footer-qr { display: flex; align-items: center; gap: 10px; }
+  .footer-qr img { width: 64px; height: 64px; border-radius: 6px; background: #fff; padding: 3px; }
+  .footer-qr span { font-size: 12px; color: #a8c4e0; font-weight: 600; line-height: 1.5; }
+
+  .conn-status { position: fixed; top: 10px; right: 10px; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 10px; opacity: 0; transition: opacity 0.3s; }
+  .conn-status.show { opacity: 1; }
+  .conn-status.ok { background: #27AE60; color: #fff; }
+  .conn-status.error { background: #e74c3c; color: #fff; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <svg class="utn-logo" viewBox="0 0 60 60" fill="none">
+      <rect width="60" height="60" rx="10" fill="#fff"/>
+      <text x="30" y="22" text-anchor="middle" font-family="Montserrat,Arial" font-weight="800" font-size="17" fill="#1F4E79">UTN</text>
+      <rect x="8" y="26" width="44" height="2" fill="#2E75B6"/>
+      <text x="30" y="38" text-anchor="middle" font-family="Montserrat,Arial" font-weight="600" font-size="7.5" fill="#2E75B6">FACULTAD REGIONAL</text>
+      <text x="30" y="50" text-anchor="middle" font-family="Montserrat,Arial" font-weight="800" font-size="9" fill="#1F4E79">AVELLANEDA</text>
+    </svg>
+    <div class="header-text">
+      <div class="sup">Universidad Tecnológica Nacional</div>
+      <div class="main">Jornada de Puertas Abiertas 2026</div>
+    </div>
+  </div>
+  <div class="live-badge">
+    <span class="live-dot"></span>
+    <span class="live-text">EN VIVO &nbsp;—&nbsp;</span>
+    <span class="live-count" id="total-count">0 respuestas</span>
+  </div>
+</header>
+
+<div class="clouds-area">
+  <div class="panel">
+    <div class="panel-q blue">Como futuro profesional, ¿qué le <em>sumarías</em> a tu barrio?</div>
+    <div class="divider blue"></div>
+    <div class="cloud" id="cloud1"></div>
+    <div class="panel-count" id="count1">Esperando respuestas...</div>
+  </div>
+  <div class="panel">
+    <div class="panel-q green">¿En qué te gustaría <em>capacitarte</em> para transformar tu barrio?</div>
+    <div class="divider green"></div>
+    <div class="cloud" id="cloud2"></div>
+    <div class="panel-count" id="count2">Esperando respuestas...</div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-cta"><strong>Escaneá el QR</strong> y participá desde tu celular</div>
+  <div class="footer-url" id="footer-url">cargando...</div>
+  <div class="footer-qr">
+    <img id="qr-img" src="/qr.png" alt="QR">
+    <span>Escaneá<br>para votar</span>
+  </div>
+</footer>
+
+<div class="conn-status" id="conn-status"></div>
+
+<script>
+  // Paletas de colores
+  const BLUES  = ['#90caf9','#64b5f6','#42a5f5','#2196F3','#1e88e5','#1976d2','#1565c0','#bbdefb','#e3f2fd'];
+  const GREENS = ['#a5d6a7','#81c784','#66bb6a','#4caf50','#43a047','#388e3c','#2e7d32','#c8e6c9','#e8f5e9'];
+
+  // Tamaños calibrados para TV 1080p vista a 3-4 metros
+  const SIZES = [88, 72, 60, 50, 42, 36, 30, 26, 22, 18];
+
+  let reconnectTimer = null;
+  let ws = null;
+  const statusEl = document.getElementById('conn-status');
+
+  function showStatus(msg, type) {
+    statusEl.textContent = msg;
+    statusEl.className = `conn-status show ${type}`;
+    setTimeout(() => { statusEl.className = 'conn-status'; }, 3000);
+  }
+
+  function connect() {
+    const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    ws = new WebSocket(`${proto}//${location.host}`);
+
+    ws.onopen = () => {
+      showStatus('Conectado', 'ok');
+      if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+      // Cargar URL del formulario
+      fetch('/api/url').then(r => r.json()).then(d => {
+        document.getElementById('footer-url').textContent = d.url.replace('https://','').replace('http://','');
+      });
+    };
+
+    ws.onmessage = (e) => {
+      const data = JSON.parse(e.data);
+      if (data.type === 'vote' || data.type === 'state') {
+        renderCloud(data.words1, 'cloud1', 'count1', BLUES);
+        renderCloud(data.words2, 'cloud2', 'count2', GREENS);
+        const t = data.total;
+        document.getElementById('total-count').textContent = t + (t === 1 ? ' respuesta' : ' respuestas');
+      }
+    };
+
+    ws.onclose = () => {
+      showStatus('Reconectando...', 'error');
+      reconnectTimer = setTimeout(connect, 3000);
+    };
+
+    ws.onerror = () => ws.close();
+  }
+
+  function renderCloud(words, containerId, countId, palette) {
+    const container = document.getElementById(containerId);
+    const sorted = Object.entries(words).sort((a, b) => b[1] - a[1]);
+    const max = sorted.length ? sorted[0][1] : 1;
+    const total = Object.values(words).reduce((a, b) => a + b, 0);
+
+    // Actualizar palabras existentes o agregar nuevas
+    const existing = {};
+    container.querySelectorAll('.word').forEach(el => { existing[el.dataset.word] = el; });
+
+    sorted.slice(0, 16).forEach(([word, count], i) => {
+      const ratio = count / max;
+      const sizeIdx = Math.min(Math.floor((1 - ratio) * SIZES.length), SIZES.length - 1);
+      const size = SIZES[sizeIdx];
+      const color = palette[Math.min(i, palette.length - 1)];
+      const display = word.charAt(0).toUpperCase() + word.slice(1);
+
+      if (existing[word]) {
+        existing[word].style.fontSize = size + 'px';
+        existing[word].style.color = color;
+        delete existing[word];
+      } else {
+        const el = document.createElement('span');
+        el.className = 'word';
+        el.dataset.word = word;
+        el.textContent = display;
+        el.style.fontSize = size + 'px';
+        el.style.color = color;
+        container.appendChild(el);
+      }
+    });
+
+    // Remover palabras que ya no están en el top 16
+    Object.values(existing).forEach(el => el.remove());
+
+    document.getElementById(countId).textContent = total > 0
+      ? `${total} respuesta${total !== 1 ? 's' : ''}`
+      : 'Esperando respuestas...';
+  }
+
+  // Ping cada 20 min para mantener Railway despierto
+  setInterval(() => fetch('/ping').catch(() => {}), 20 * 60 * 1000);
+
+  connect();
+</script>
+</body>
+</html>
