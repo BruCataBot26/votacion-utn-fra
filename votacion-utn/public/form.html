@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>UTN FRA — Jornada 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Montserrat', Arial, sans-serif; background: #f0f4f8; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+  .card { background: #fff; border-radius: 20px; padding: 28px 24px; width: 100%; max-width: 390px; box-shadow: 0 8px 32px rgba(31,78,121,0.12); }
+
+  .logo-area { text-align: center; margin-bottom: 20px; }
+  .logo-area img { width: 80px; height: 80px; object-fit: contain; margin-bottom: 10px; }
+  .logo-tagline { font-size: 13px; font-weight: 600; color: #1F4E79; line-height: 1.6; }
+  .logo-tagline em { font-style: normal; color: #0e8a8a; }
+
+  .step-bar { display: flex; align-items: flex-start; margin-bottom: 24px; }
+  .step-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+  .step-circle { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; transition: all 0.3s; flex-shrink: 0; }
+  .step-circle.active  { background: #1F4E79; color: #fff; }
+  .step-circle.done    { background: #27AE60; color: #fff; }
+  .step-circle.pending { background: #e8edf2; color: #bbb; }
+  .step-label { font-size: 10px; color: #bbb; margin-top: 5px; font-weight: 600; text-align: center; }
+  .step-label.active { color: #1F4E79; }
+  .step-connector { flex: 1; height: 2px; background: #e8edf2; margin-top: 17px; transition: background 0.3s; }
+  .step-connector.done { background: #27AE60; }
+
+  .question { font-size: 18px; font-weight: 800; color: #1F4E79; line-height: 1.35; margin-bottom: 6px; }
+  .question span { color: #0e8a8a; }
+  .question-hint { font-size: 12px; color: #aaa; margin-bottom: 12px; font-weight: 500; }
+
+  .answer-input { width: 100%; border: 1.5px solid #d0dce8; border-radius: 12px; padding: 13px 16px; font-size: 15px; font-family: 'Montserrat', Arial, sans-serif; font-weight: 600; color: #1F4E79; outline: none; transition: border 0.15s; background: #fafbfc; }
+  .answer-input:focus { border-color: #1F4E79; background: #fff; }
+  .answer-input::placeholder { color: #ccc; font-weight: 400; }
+
+  .sugerencias-label { font-size: 11px; font-weight: 700; color: #aaa; letter-spacing: 0.06em; text-transform: uppercase; margin: 12px 0 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+  .chip { padding: 7px 14px; border: 1.5px solid #d0dce8; border-radius: 20px; font-size: 13px; color: #555; cursor: pointer; font-family: 'Montserrat', Arial, sans-serif; font-weight: 600; background: #fff; transition: all 0.15s; }
+  .chip:hover, .chip.selected { border-color: #1F4E79; color: #1F4E79; background: #e8f0f8; }
+  .chip.teal:hover, .chip.teal.selected { border-color: #0e8a8a; color: #0e8a8a; background: #e0f4f4; }
+
+  .radio-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
+  .radio-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1.5px solid #d0dce8; border-radius: 12px; cursor: pointer; transition: all 0.15s; }
+  .radio-item:hover { border-color: #1F4E79; background: #f0f4f8; }
+  .radio-item.selected { border-color: #1F4E79; background: #e8f0f8; }
+  .radio-item input { display: none; }
+  .radio-dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #d0dce8; flex-shrink: 0; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+  .radio-item.selected .radio-dot { border-color: #1F4E79; background: #1F4E79; }
+  .radio-item.selected .radio-dot::after { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #fff; display: block; }
+  .radio-label { font-size: 14px; font-weight: 600; color: #333; }
+  .radio-item.selected .radio-label { color: #1F4E79; }
+
+  .optional-label { font-size: 11px; font-weight: 700; color: #aaa; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px; }
+  .optional-skip { font-size: 12px; color: #aaa; font-weight: 500; text-align: center; margin-top: 10px; cursor: pointer; text-decoration: underline; }
+
+  .btn { width: 100%; padding: 15px; background: #1F4E79; color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 800; font-family: 'Montserrat', Arial, sans-serif; cursor: pointer; margin-top: 16px; transition: all 0.15s; }
+  .btn:hover:not(:disabled) { background: #2E75B6; transform: translateY(-1px); }
+  .btn:disabled { background: #c8d4de; cursor: default; }
+
+  .thanks { text-align: center; padding: 12px 0; }
+  .thanks-icon { font-size: 56px; margin-bottom: 14px; }
+  .thanks h2 { font-size: 22px; font-weight: 800; color: #1F4E79; margin-bottom: 10px; }
+  .thanks p { font-size: 14px; color: #888; line-height: 1.7; font-weight: 500; }
+  .thanks .hi { color: #27AE60; font-weight: 700; }
+  .err { font-size: 12px; color: #e74c3c; margin-top: 6px; font-weight: 600; display: none; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo-area">
+    <img src="/logo-utn.png" alt="UTN FRA — Secretaría de Cultura y Extensión Universitaria">
+    <div class="logo-tagline">Estás en la UTN.<br><em>Formamos personas que transforman realidades.</em></div>
+  </div>
+
+  <div class="step-bar">
+    <div class="step-item">
+      <div class="step-circle active" id="dot1">1</div>
+      <div class="step-label active" id="lbl1">Tu barrio</div>
+    </div>
+    <div class="step-connector" id="conn1"></div>
+    <div class="step-item">
+      <div class="step-circle pending" id="dot2">2</div>
+      <div class="step-label" id="lbl2">Capacitación</div>
+    </div>
+    <div class="step-connector" id="conn2"></div>
+    <div class="step-item">
+      <div class="step-circle pending" id="dot3">3</div>
+      <div class="step-label" id="lbl3">Intereses</div>
+    </div>
+  </div>
+
+  <!-- PASO 1 -->
+  <div id="step1">
+    <div class="question">Pensando en tu futuro, ¿qué le <span>sumarías</span> a tu barrio?</div>
+    <div class="question-hint">Escribí lo primero que se te ocurre</div>
+    <input type="text" class="answer-input" id="input1" placeholder="Tu respuesta..." maxlength="60" oninput="chk('btn1','input1')">
+    <div class="sugerencias-label">Sugerencias</div>
+    <div class="chips" id="chips1">
+      <span class="chip" onclick="setInput('input1','chips1',this)">Infraestructura</span>
+      <span class="chip" onclick="setInput('input1','chips1',this)">Educación</span>
+      <span class="chip" onclick="setInput('input1','chips1',this)">Tecnología</span>
+      <span class="chip" onclick="setInput('input1','chips1',this)">Trabajo</span>
+      <span class="chip" onclick="setInput('input1','chips1',this)">Salud</span>
+      <span class="chip" onclick="setInput('input1','chips1',this)">Medio ambiente</span>
+    </div>
+    <div class="err" id="err1">Por favor ingresá una respuesta</div>
+    <button class="btn" id="btn1" onclick="goStep2()" disabled>Siguiente →</button>
+  </div>
+
+  <!-- PASO 2 -->
+  <div id="step2" style="display:none;">
+    <div class="question">¿En qué te gustaría <span>capacitarte</span> para transformar tu barrio?</div>
+    <div class="question-hint">Elegí una opción o escribí la tuya</div>
+    <div class="chips" id="chips2">
+      <span class="chip teal" onclick="pickChip('input2','chips2',this)">Programación</span>
+      <span class="chip teal" onclick="pickChip('input2','chips2',this)">Electricidad</span>
+      <span class="chip teal" onclick="pickChip('input2','chips2',this)">Refrigeración</span>
+      <span class="chip teal" onclick="pickChip('input2','chips2',this)">Idiomas</span>
+      <span class="chip teal" onclick="pickChip('input2','chips2',this)">Salud</span>
+      <span class="chip teal" onclick="pickChip('input2','chips2',this)">Inteligencia Artificial</span>
+      <span class="chip teal" onclick="pickChip('input2','chips2',this)">Redes</span>
+      <span class="chip teal" onclick="pickChip('input2','chips2',this)">Oficios</span>
+    </div>
+    <input type="text" class="answer-input" id="input2" placeholder="O escribí tu respuesta..." maxlength="60" oninput="chk('btn2','input2')">
+    <div class="err" id="err2">Por favor ingresá una respuesta</div>
+    <button class="btn" id="btn2" onclick="goStep3()" disabled>Siguiente →</button>
+  </div>
+
+  <!-- PASO 3 - OPCIONAL -->
+  <div id="step3" style="display:none;">
+    <div class="optional-label">Pregunta opcional</div>
+    <div class="question">¿Qué te <span>interesa</span> más hoy?</div>
+    <div class="question-hint" style="margin-bottom:16px;">Podés saltearte esta pregunta si querés</div>
+    <div class="radio-group" id="radio3">
+      <label class="radio-item" onclick="selectRadio(this)"><input type="radio" name="q3"><div class="radio-dot"></div><span class="radio-label">Conseguir trabajo rápido</span></label>
+      <label class="radio-item" onclick="selectRadio(this)"><input type="radio" name="q3"><div class="radio-dot"></div><span class="radio-label">Aprender un oficio</span></label>
+      <label class="radio-item" onclick="selectRadio(this)"><input type="radio" name="q3"><div class="radio-dot"></div><span class="radio-label">Estudiar una carrera</span></label>
+      <label class="radio-item" onclick="selectRadio(this)"><input type="radio" name="q3"><div class="radio-dot"></div><span class="radio-label">Emprender</span></label>
+      <label class="radio-item" onclick="selectRadio(this)"><input type="radio" name="q3"><div class="radio-dot"></div><span class="radio-label">Todavía lo estoy explorando</span></label>
+    </div>
+    <button class="btn" id="btn3" onclick="submitVote()">Enviar ✓</button>
+    <div class="optional-skip" onclick="submitVote()">Saltearse esta pregunta y enviar</div>
+  </div>
+
+  <!-- GRACIAS -->
+  <div id="thanks" style="display:none;">
+    <div class="thanks">
+      <div class="thanks-icon">🎓</div>
+      <h2>¡Gracias!</h2>
+      <p>Tu respuesta ya aparece<br><span class="hi">en la pantalla principal.</span></p>
+      <p style="margin-top:14px;">Seguí recorriendo la facultad<br>y conocé todo lo que tenemos para vos.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  let a1 = '', a2 = '', a3 = '';
+
+  function chk(btnId, inputId) {
+    document.getElementById(btnId).disabled = document.getElementById(inputId).value.trim().length < 2;
+  }
+
+  function setInput(inputId, chipsId, el) {
+    document.getElementById(inputId).value = el.textContent;
+    chk('btn1', inputId);
+  }
+
+  function pickChip(inputId, chipsId, el) {
+    document.querySelectorAll(`#${chipsId} .chip`).forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById(inputId).value = el.textContent;
+    chk('btn2', inputId);
+  }
+
+  function selectRadio(el) {
+    document.querySelectorAll('#radio3 .radio-item').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+    a3 = el.querySelector('.radio-label').textContent;
+  }
+
+  function transition(fromId, toId, dotDoneId, connDoneId, dotActiveId, lblActiveId) {
+    document.getElementById(fromId).style.display = 'none';
+    document.getElementById(toId).style.display = 'block';
+    document.getElementById(dotDoneId).className = 'step-circle done';
+    document.getElementById(dotDoneId).textContent = '✓';
+    if (connDoneId) document.getElementById(connDoneId).className = 'step-connector done';
+    document.getElementById(dotActiveId).className = 'step-circle active';
+    document.getElementById(lblActiveId).className = 'step-label active';
+  }
+
+  function goStep2() {
+    a1 = document.getElementById('input1').value.trim();
+    if (a1.length < 2) return;
+    const lbl1 = document.getElementById('lbl1');
+    lbl1.className = 'step-label';
+    transition('step1', 'step2', 'dot1', 'conn1', 'dot2', 'lbl2');
+  }
+
+  function goStep3() {
+    a2 = document.getElementById('input2').value.trim();
+    if (a2.length < 2) return;
+    const lbl2 = document.getElementById('lbl2');
+    lbl2.className = 'step-label';
+    transition('step2', 'step3', 'dot2', 'conn2', 'dot3', 'lbl3');
+  }
+
+  async function submitVote() {
+    const btn = document.getElementById('btn3');
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+    try {
+      const r = await fetch('/vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ a1, a2, a3 })
+      });
+      if (!r.ok) throw new Error();
+      document.getElementById('step3').style.display = 'none';
+      document.getElementById('dot3').className = 'step-circle done';
+      document.getElementById('dot3').textContent = '✓';
+      document.getElementById('thanks').style.display = 'block';
+    } catch {
+      btn.disabled = false;
+      btn.textContent = 'Enviar ✓';
+      alert('Error al enviar. Intentá de nuevo.');
+    }
+  }
+</script>
+</body>
+</html>
