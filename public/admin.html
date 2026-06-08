@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — UTN FRA</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Montserrat', Arial, sans-serif; background: #f0f4f8; padding: 24px; color: #222; }
+  h1 { font-size: 18px; font-weight: 800; color: #1F4E79; margin-bottom: 6px; }
+  .subtitle { font-size: 12px; color: #888; font-weight: 500; margin-bottom: 20px; }
+  .ws-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ccc; margin-right: 5px; }
+  .ws-dot.on { background: #27AE60; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .stat { background: #fff; border-radius: 12px; padding: 16px 18px; border: 1px solid #dde3ea; }
+  .stat .lbl { font-size: 10px; font-weight: 700; color: #aaa; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+  .stat .val { font-size: 30px; font-weight: 800; color: #1F4E79; }
+  .section { font-size: 12px; font-weight: 700; color: #888; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 10px; margin-top: 20px; }
+  .list { background: #fff; border-radius: 12px; border: 1px solid #dde3ea; overflow: hidden; max-height: 280px; overflow-y: auto; margin-bottom: 16px; }
+  .list-item { padding: 10px 16px; border-bottom: 1px solid #f0f4f8; display: flex; gap: 10px; align-items: flex-start; font-size: 13px; }
+  .list-item:last-child { border-bottom: none; }
+  .tag { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 8px; background: #1F4E79; color: #fff; white-space: nowrap; flex-shrink: 0; margin-top: 1px; }
+  .empty { padding: 28px; text-align: center; font-size: 13px; color: #bbb; font-weight: 500; }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn { padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 700; font-family: 'Montserrat', Arial, sans-serif; cursor: pointer; border: 1.5px solid; transition: all 0.15s; }
+  .btn-export { border-color: #1F4E79; color: #1F4E79; background: transparent; }
+  .btn-export:hover { background: #1F4E79; color: #fff; }
+  .btn-reset { border-color: #e74c3c; color: #e74c3c; background: transparent; }
+  .btn-reset:hover { background: #e74c3c; color: #fff; }
+  .turno-card { background: #fff; border-radius: 10px; border: 1px solid #dde3ea; padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+  .turno-info .name { font-size: 14px; font-weight: 700; color: #1F4E79; }
+  .turno-info .meta { font-size: 12px; color: #aaa; font-weight: 500; margin-top: 2px; }
+  .reset-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
+  .reset-modal.open { display: flex; }
+  .modal-box { background: #fff; border-radius: 16px; padding: 28px 24px; width: 100%; max-width: 360px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
+  .modal-box h2 { font-size: 17px; font-weight: 800; color: #1F4E79; margin-bottom: 8px; }
+  .modal-box p { font-size: 13px; color: #666; margin-bottom: 16px; font-weight: 500; line-height: 1.6; }
+  .modal-input { width: 100%; border: 1.5px solid #dde3ea; border-radius: 10px; padding: 11px 14px; font-size: 14px; font-family: 'Montserrat', Arial, sans-serif; font-weight: 600; outline: none; margin-bottom: 16px; }
+  .modal-input:focus { border-color: #1F4E79; }
+  .modal-btns { display: flex; gap: 10px; }
+  .modal-btns .btn { flex: 1; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>Panel de Administración</h1>
+<div class="subtitle"><span class="ws-dot" id="ws-dot"></span><span id="ws-label">Conectando...</span></div>
+
+<div class="grid3">
+  <div class="stat"><div class="lbl">Votos actuales</div><div class="val" id="total">0</div></div>
+  <div class="stat"><div class="lbl">Palabras Q1</div><div class="val" id="u1">0</div></div>
+  <div class="stat"><div class="lbl">Palabras Q2</div><div class="val" id="u2">0</div></div>
+</div>
+
+<div class="section">Últimas respuestas (turno actual)</div>
+<div class="list" id="list"></div>
+
+<div class="btn-row">
+  <button class="btn btn-export" onclick="exportCSV()">⬇ Exportar CSV turno actual</button>
+  <button class="btn btn-reset" onclick="openReset()">↺ Cerrar turno y resetear</button>
+</div>
+
+<div class="section" id="turnos-title" style="display:none;">Turnos guardados</div>
+<div id="turnos-list"></div>
+
+<!-- Modal reset -->
+<div class="reset-modal" id="reset-modal">
+  <div class="modal-box">
+    <h2>Cerrar turno</h2>
+    <p>Los votos actuales se guardarán antes de limpiar la pantalla.<br>Podrás descargarlos después.</p>
+    <input type="text" class="modal-input" id="turno-label" placeholder="Nombre del turno (ej: Turno Mañana)">
+    <div class="modal-btns">
+      <button class="btn btn-export" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-reset" onclick="confirmReset()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let allData = { votes: [], words1: {}, words2: {}, total: 0, turnos: [] };
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  let ws, reconnTimer;
+
+  function connect() {
+    ws = new WebSocket(`${proto}//${location.host}`);
+    ws.onopen = () => {
+      document.getElementById('ws-dot').className = 'ws-dot on';
+      document.getElementById('ws-label').textContent = 'Conectado en tiempo real';
+    };
+    ws.onclose = () => {
+      document.getElementById('ws-dot').className = 'ws-dot';
+      document.getElementById('ws-label').textContent = 'Reconectando...';
+      reconnTimer = setTimeout(connect, 3000);
+    };
+    ws.onmessage = (e) => {
+      const d = JSON.parse(e.data);
+      if (d.type === 'state') { allData = { ...allData, ...d }; renderAll(); }
+      if (d.type === 'vote') {
+        allData.words1 = d.words1; allData.words2 = d.words2;
+        allData.total = d.total;
+        if (d.last) allData.votes = [...(allData.votes || []), d.last];
+        renderAll();
+      }
+    };
+  }
+
+  function renderAll() {
+    document.getElementById('total').textContent = allData.total || 0;
+    document.getElementById('u1').textContent = Object.keys(allData.words1 || {}).length;
+    document.getElementById('u2').textContent = Object.keys(allData.words2 || {}).length;
+    const list = document.getElementById('list');
+    const votes = allData.votes || [];
+    if (!votes.length) { list.innerHTML = '<div class="empty">Sin respuestas todavía</div>'; return; }
+    list.innerHTML = [...votes].reverse().map(v => `
+      <div class="list-item">
+        <span class="tag">${new Date(v.ts).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}</span>
+        <span><strong style="color:#1F4E79">${v.q1}</strong> → ${v.q2}</span>
+      </div>`).join('');
+    renderTurnos();
+  }
+
+  function renderTurnos() {
+    const t = allData.turnos || [];
+    const title = document.getElementById('turnos-title');
+    const container = document.getElementById('turnos-list');
+    if (!t.length) { title.style.display = 'none'; container.innerHTML = ''; return; }
+    title.style.display = 'block';
+    container.innerHTML = t.map((turno, i) => `
+      <div class="turno-card">
+        <div class="turno-info">
+          <div class="name">${turno.label}</div>
+          <div class="meta">${turno.votes.length} votos · ${new Date(turno.ts).toLocaleDateString('es-AR')}</div>
+        </div>
+        <button class="btn btn-export" onclick="exportTurno(${i})">⬇ CSV</button>
+      </div>`).join('');
+  }
+
+  function exportCSV() {
+    window.open('/export/current', '_blank');
+  }
+  function exportTurno(idx) {
+    window.open(`/export/turno/${idx}`, '_blank');
+  }
+
+  function openReset() {
+    document.getElementById('turno-label').value = `Turno ${(allData.turnos||[]).length + 1}`;
+    document.getElementById('reset-modal').className = 'reset-modal open';
+  }
+  function closeModal() {
+    document.getElementById('reset-modal').className = 'reset-modal';
+  }
+  async function confirmReset() {
+    const label = document.getElementById('turno-label').value.trim() || `Turno ${(allData.turnos||[]).length + 1}`;
+    closeModal();
+    await fetch('/reset', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ label }) });
+    allData.votes = []; allData.words1 = {}; allData.words2 = {}; allData.total = 0;
+    allData.turnos = [...(allData.turnos||[]), { label, votes: [], ts: new Date().toISOString() }];
+    renderAll();
+  }
+
+  connect();
+  // Cargar turnos guardados al inicio
+  fetch('/data').then(r => r.json()).then(d => { allData = d; renderAll(); }).catch(() => {});
+</script>
+</body>
+</html>

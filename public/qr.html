@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>QR — UTN FRA</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Montserrat', Arial, sans-serif; background: #f0f4f8; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+  .card { background: #fff; border-radius: 20px; padding: 36px 32px; max-width: 380px; width: 100%; text-align: center; box-shadow: 0 8px 32px rgba(31,78,121,0.12); }
+  .utn-header { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 20px; }
+  .utn-header svg { width: 56px; height: 56px; }
+  .utn-header-text .name { font-size: 13px; font-weight: 800; color: #1F4E79; }
+  .utn-header-text .sub { font-size: 11px; color: #2E75B6; font-weight: 600; }
+  .tagline { font-size: 15px; font-weight: 700; color: #1F4E79; line-height: 1.5; margin-bottom: 6px; }
+  .tagline em { color: #2E75B6; font-style: normal; }
+  .questions { margin: 16px 0; text-align: left; }
+  .q { font-size: 13px; font-weight: 600; color: #444; padding: 8px 12px; background: #f0f4f8; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid #1F4E79; }
+  .q.b { border-left-color: #27AE60; }
+  .qr-wrap { margin: 20px 0; }
+  .qr-wrap img { width: 200px; height: 200px; border-radius: 12px; border: 3px solid #1F4E79; }
+  .scan-text { font-size: 16px; font-weight: 800; color: #1F4E79; margin-top: 12px; }
+  .url { font-size: 12px; color: #888; font-family: monospace; margin-top: 4px; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="utn-header">
+    <img src="/logo-utn.png" alt="UTN FRA" style="width:80px;height:80px;object-fit:contain;margin-bottom:10px;">
+    <div class="utn-header-text">
+      <div class="name">UTN FRA</div>
+      <div class="sub">Jornada de Puertas Abiertas 2026</div>
+    </div>
+  </div>
+  <div class="tagline">Estás en la UTN.<br><em>Acá formamos a quienes cambian su entorno.</em></div>
+  <div class="questions">
+    <div class="q">Como futuro profesional, ¿qué le sumarías a tu barrio?</div>
+    <div class="q b">¿En qué te gustaría capacitarte para transformar tu barrio?</div>
+  </div>
+  <div class="qr-wrap">
+    <img src="/qr.png" alt="QR para votar">
+    <div class="scan-text">📱 Escaneá y participá</div>
+    <div class="url" id="url-text"></div>
+  </div>
+</div>
+<script>
+  fetch('/api/url').then(r=>r.json()).then(d=>{
+    document.getElementById('url-text').textContent = d.url;
+  });
+</script>
+</body>
+</html>
